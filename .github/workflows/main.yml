@@ -48,6 +48,60 @@ jobs:
         path: "**/*.deb"
         if-no-files-found: error
 
+  build-deb-arm64:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        path: repo
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential perl fakeroot git curl xz-utils libssl-dev libxml2-dev libtinfo6
+
+    - name: Install Theos
+      run: git clone --recursive https://github.com/theos/theos.git /home/runner/theos
+
+    - name: Install Linux toolchain
+      run: |
+        mkdir -p /home/runner/theos/toolchain
+        curl -sL https://github.com/L1ghtmann/llvm-project/releases/latest/download/iOSToolchain-x86_64.tar.xz | tar -xJvf - -C /home/runner/theos/toolchain/
+        ls -la /home/runner/theos/toolchain/linux/iphone/bin/
+
+    - name: Download iOS SDK
+      run: |
+        mkdir -p /home/runner/theos/sdks
+        cd /home/runner/theos/sdks
+        wget -q https://github.com/theos/sdks/archive/refs/heads/master.tar.gz
+        tar -xzf master.tar.gz
+        mv sdks-master/* .
+        rm -rf sdks-master master.tar.gz
+        ls -la
+
+    - name: Build package (arm64 only)
+      run: |
+        export THEOS=/home/runner/theos
+        export PATH=$THEOS/bin:$PATH
+        cd repo
+        ls -la
+        make package FINALPACKAGE=1 ARCHS=arm64
+
+    - name: Rename artifact
+      run: |
+        cd repo
+        for f in packages/*.deb; do
+          mv "$f" "${f%.deb}-arm64.deb"
+        done
+        ls -la packages/
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: TetherUnlock-deb-arm64
+        path: "**/*.deb"
+        if-no-files-found: error
+
   build-ipa:
     runs-on: macos-latest
     steps:
