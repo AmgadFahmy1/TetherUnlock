@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>TetherUnlock</string>
+			<key>footerText</key>
+			<string>Complete tethering unlock for iPadOS 15</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.tetherunlock.prefs</string>
+			<key>key</key>
+			<string>tether_enabled</string>
+			<key>label</key>
+			<string>Enable TetherUnlock</string>
+			<key>PostNotification</key>
+			<string>com.tetherunlock/respring</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Tethering Methods</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>detail</key>
+			<string>TetherUnlockWiFiController</string>
+			<key>icon</key>
+			<string>wifi.png</string>
+			<key>label</key>
+			<string>Wi-Fi Hotspot</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>detail</key>
+			<string>TetherUnlockUSBController</string>
+			<key>icon</key>
+			<string>usb.png</string>
+			<key>label</key>
+			<string>USB Tethering</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>detail</key>
+			<string>TetherUnlockBTController</string>
+			<key>icon</key>
+			<string>bluetooth.png</string>
+			<key>label</key>
+			<string>Bluetooth DUN</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Advanced</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.tetherunlock.prefs</string>
+			<key>key</key>
+			<string>carrier_unlock_enabled</string>
+			<key>label</key>
+			<string>Carrier Unlock</string>
+			<key>PostNotification</key>
+			<string>com.tetherunlock/respring</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>VPN Sharing</string>
+			<key>footerText</key>
+			<string>Share active VPN connection with tethered devices. Supports IKEv2, IPSec, and OpenVPN.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.tetherunlock.prefs</string>
+			<key>key</key>
+			<string>vpn_passthrough_enabled</string>
+			<key>label</key>
+			<string>Enable VPN Passthrough</string>
+			<key>PostNotification</key>
+			<string>com.tetherunlock/respring</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.tetherunlock.prefs</string>
+			<key>key</key>
+			<string>vpn_share_over_tether</string>
+			<key>label</key>
+			<string>Share VPN Over Tether</string>
+			<key>PostNotification</key>
+			<string>com.tetherunlock/respring</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.tetherunlock.prefs</string>
+			<key>key</key>
+			<string>vpn_dns_sharing</string>
+			<key>label</key>
+			<string>Share VPN DNS</string>
+			<key>PostNotification</key>
+			<string>com.tetherunlock/respring</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.tetherunlock.prefs</string>
+			<key>key</key>
+			<string>vpn_firewall_bypass</string>
+			<key>label</key>
+			<string>Bypass VPN Firewall</string>
+			<key>PostNotification</key>
+			<string>com.tetherunlock/respring</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSEditTextCell</string>
+			<key>defaults</key>
+			<string>com.tetherunlock.prefs</string>
+			<key>key</key>
+			<string>custom_apn</string>
+			<key>label</key>
+			<string>Custom APN</string>
+			<key>placeholder</key>
+			<string>Carrier APN</string>
+			<key>PostNotification</key>
+			<string>com.tetherunlock/respring</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Information</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>action</key>
+			<string>respring</string>
+			<key>label</key>
+			<string>Apply Changes</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>action</key>
+			<string>openGitHub</string>
+			<key>label</key>
+			<string>GitHub Repository</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>TetherUnlock 1.0.0 - For iPadOS 15.0-15.4.1 with Xina15</string>
+		</dict>
+	</array>
+	<key>title</key>
+	<string>TetherUnlock</string>
+</dict>
+</plist>
