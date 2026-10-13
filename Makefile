@@ -18,7 +18,7 @@ TetherUnlock_FILES = Tweak/Tweak.x \
                      Tweak/VPNShare.x
 
 TetherUnlock_CFLAGS = -Wno-deprecated-declarations -Wno-error -Wno-unused-variable -Wno-unused-function
-TetherUnlock_FRAMEWORKS = UIKit CoreTelephony NetworkExtension SystemConfiguration
+TetherUnlock_FRAMEWORKS = UIKit CoreTelephony NetworkExtension SystemConfiguration IOKit Foundation
 TetherUnlock_PRIVATE_FRAMEWORKS = Preferences MobileWiFi
 TetherUnlock_LIBRARIES = substrate
 
