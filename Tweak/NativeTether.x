@@ -15,7 +15,7 @@ static BOOL enableNativeTethering() {
 
     typedef void* (*NETRBClientCreateFunc)(void*, void*, int);
     typedef int (*NETRBClientSetGlobalServiceStateFunc)(void*, int);
-    typedef void (*WiFiManagerClientCreateFunc)(void*, int);
+    typedef void* (*WiFiManagerClientCreateFunc)(void*, int);
     typedef void (*WiFiManagerClientSetMISDiscoveryStateFunc)(void*, bool);
 
     NETRBClientCreateFunc netrbCreate = (NETRBClientCreateFunc)dlsym(netrb, "NETRBClientCreate");
