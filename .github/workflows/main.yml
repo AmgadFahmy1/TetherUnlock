@@ -12,7 +12,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential clang perl fakeroot git curl xz-utils ccache libssl-dev libxml2-dev
+        sudo apt-get install -y build-essential perl fakeroot git curl xz-utils libssl-dev libxml2-dev libtinfo6
 
     - name: Install Theos
       run: git clone --recursive https://github.com/theos/theos.git /home/runner/theos
@@ -20,12 +20,8 @@ jobs:
     - name: Install Linux toolchain
       run: |
         mkdir -p /home/runner/theos/toolchain
-        cd /home/runner/theos/toolchain
-        wget -q https://github.com/sbingner/llvm-project-linux/releases/latest/download/linux-ios-arm64e-clang-toolchain.tar.lzma
-        tar --lzma -xf linux-ios-arm64e-clang-toolchain.tar.lzma
-        mv ios-arm64e-clang-toolchain linux/iphone
-        rm -f linux-ios-arm64e-clang-toolchain.tar.lzma
-        ls -la linux/iphone/bin/
+        curl -sL https://github.com/L1ghtmann/llvm-project/releases/latest/download/iOSToolchain-x86_64.tar.xz | tar -xJvf - -C /home/runner/theos/toolchain/
+        ls -la /home/runner/theos/toolchain/linux/iphone/bin/
 
     - name: Download iOS SDK
       run: |
