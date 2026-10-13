@@ -14,7 +14,7 @@ TetherUnlockPrefs_FILES = TetherUnlockRootListController.m \
 TetherUnlockPrefs_INSTALL_PATH = /Library/PreferenceBundles
 TetherUnlockPrefs_FRAMEWORKS = UIKit CoreTelephony CoreFoundation
 TetherUnlockPrefs_PRIVATE_FRAMEWORKS = Preferences
-TetherUnlockPrefs_CFLAGS = -fobjc-arc
+TetherUnlockPrefs_CFLAGS = -Wno-deprecated-declarations -Wno-error
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 
