@@ -59,20 +59,25 @@ jobs:
       run: |
         cd repo/companion
         xcodebuild -project TetherUnlockApp.xcodeproj \
-          -scheme TetherUnlockApp \
+          -target TetherUnlockApp \
           -configuration Release \
           -sdk iphoneos \
           -derivedDataPath build \
           CODE_SIGNING_ALLOWED=NO \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
+          ONLY_ACTIVE_ARCH=NO \
           build
 
     - name: Package IPA/TIPA
       run: |
         cd repo/companion
+        APP=$(find build -name "TetherUnlockApp.app" -type d | head -1)
+        echo "Found app: $APP"
+        ls -la "$APP"
         mkdir -p Payload
-        cp -R build/Build/Products/Release-iphoneos/TetherUnlockApp.app Payload/
+        cp -R "$APP" Payload/
+        /usr/bin/codesign --force --deep --sign - Payload/TetherUnlockApp.app || true
         zip -qry TetherUnlock.ipa Payload
         cp TetherUnlock.ipa TetherUnlock.tipa
         rm -rf Payload
