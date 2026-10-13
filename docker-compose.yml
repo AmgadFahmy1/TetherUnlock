@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  tetherunlock-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tetherunlock:latest
+    container_name: tetherunlock-build
+    volumes:
+      - .:/build
+      - ./packages:/build/packages
+    working_dir: /build
+    command: bash build_deb.sh
+
+  # Alternative: Use pre-built image
+  tetherunlock-prebuilt:
+    image: tetherunlock:latest
+    container_name: tetherunlock-build-prebuilt
+    volumes:
+      - .:/build
+      - ./packages:/build/packages
+    working_dir: /build
+    command: bash build_deb.sh
+    profiles:
+      - prebuilt

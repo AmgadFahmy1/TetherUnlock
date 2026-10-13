@@ -1,0 +1,10 @@
+Package: com.tetherunlock.tweak
+Name: TetherUnlock
+Depends: mobilesubstrate, preferenceloader
+Version: 1.0.0
+Architecture: iphoneos-arm64
+Description: Complete tethering unlock for iPadOS 15 - USB, Wi-Fi, Bluetooth DUN. Works with Xina15 rootless jailbreak.
+Maintainer: TetherUnlock Dev
+Author: TetherUnlock Dev
+Section: Tweaks
+Depiction: https://github.com/tetherunlock
