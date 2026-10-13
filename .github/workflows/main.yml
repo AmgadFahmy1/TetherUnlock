@@ -47,3 +47,42 @@ jobs:
         name: TetherUnlock-deb
         path: "**/*.deb"
         if-no-files-found: error
+
+  build-ipa:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        path: repo
+
+    - name: Build app
+      run: |
+        cd repo/companion
+        xcodebuild -project TetherUnlockApp.xcodeproj \
+          -scheme TetherUnlockApp \
+          -configuration Release \
+          -sdk iphoneos \
+          -derivedDataPath build \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          build
+
+    - name: Package IPA/TIPA
+      run: |
+        cd repo/companion
+        mkdir -p Payload
+        cp -R build/Build/Products/Release-iphoneos/TetherUnlockApp.app Payload/
+        zip -qry TetherUnlock.ipa Payload
+        cp TetherUnlock.ipa TetherUnlock.tipa
+        rm -rf Payload
+        ls -la *.ipa *.tipa
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: TetherUnlock-ipa
+        path: |
+          repo/companion/TetherUnlock.ipa
+          repo/companion/TetherUnlock.tipa
+        if-no-files-found: error
