@@ -137,11 +137,55 @@ jobs:
         rm -rf Payload
         ls -la *.ipa *.tipa
 
-    - name: Upload artifact
+    - name: Upload artifact (IPA)
       uses: actions/upload-artifact@v4
       with:
         name: TetherUnlock-ipa
-        path: |
-          repo/companion/TetherUnlock.ipa
-          repo/companion/TetherUnlock.tipa
+        path: repo/companion/TetherUnlock.ipa
         if-no-files-found: error
+
+    - name: Upload artifact (TIPA)
+      uses: actions/upload-artifact@v4
+      with:
+        name: TetherUnlock-tipa
+        path: repo/companion/TetherUnlock.tipa
+        if-no-files-found: error
+  release:
+    needs: [build-deb, build-deb-arm64, build-ipa]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Collect files
+      run: |
+        mkdir -p release
+        find artifacts -name "*.deb" -exec cp {} release/ \;
+        find artifacts -name "*.ipa" -exec cp {} release/ \;
+        find artifacts -name "*.tipa" -exec cp {} release/ \;
+        mv release/com.tetherunlock.tweak_1.0.0_iphoneos-arm64-arm64.deb release/TetherUnlock-arm64.deb || true
+        mv release/com.tetherunlock.tweak_1.0.0_iphoneos-arm64.deb release/TetherUnlock-arm64e.deb || true
+        ls -la release/
+
+    - name: Publish release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: v1.0.0
+        name: TetherUnlock v1.0.0
+        body: |
+          TetherUnlock v1.0.0 — tethering unlock for iPadOS 15.0–15.4.1 (Xina15 rootless).
+
+          **Packages**
+          - `TetherUnlock-arm64.deb` — arm64-only (safest, recommended to try first)
+          - `TetherUnlock-arm64e.deb` — arm64 + arm64e
+          - `TetherUnlock.tipa` — companion app for TrollStore/Sideloadly
+          - `TetherUnlock.ipa` — same app
+
+          **Native mode:** Settings → TetherUnlock → "Enable Native Tethering" (TetherMe-style Netrb/MIS toggle).
+        files: |
+          release/*
+        make_latest: true
