@@ -1,6 +1,6 @@
 #import "Headers/TetherHeaders.h"
-#import <IOBluetooth/IOBluetooth.h>
-#import <CoreBluetooth/CoreBluetooth.h>
+// IOBluetooth not available on iOS - using runtime loading
+#import <Foundation/Foundation.h>
 
 // Bluetooth DUN (Dial-Up Networking) tethering
 static CBCentralManager *bluetoothManager = nil;
