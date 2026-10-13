@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>USB Tethering</string>
+			<key>footerText</key>
+			<string>Share internet connection via USB cable</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.tetherunlock.prefs</string>
+			<key>key</key>
+			<string>usb_tether_enabled</string>
+			<key>label</key>
+			<string>Enable USB Tethering</string>
+			<key>PostNotification</key>
+			<string>com.tetherunlock/respring</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Settings</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.tetherunlock.prefs</string>
+			<key>key</key>
+			<string>usb_dhcp_enabled</string>
+			<key>label</key>
+			<string>Auto-configure DHCP</string>
+			<key>PostNotification</key>
+			<string>com.tetherunlock/respring</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSEditTextCell</string>
+			<key>defaults</key>
+			<string>com.tetherunlock.prefs</string>
+			<key>key</key>
+			<string>usb_ip_range</string>
+			<key>label</key>
+			<string>IP Range</string>
+			<key>placeholder</key>
+			<string>192.168.1.100-200</string>
+			<key>PostNotification</key>
+			<string>com.tetherunlock/respring</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Status</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSStaticTextCell</string>
+			<key>default</key>
+			<string>Disconnected</string>
+			<key>defaults</key>
+			<string>com.tetherunlock.prefs</string>
+			<key>key</key>
+			<string>usb_status</string>
+			<key>label</key>
+			<string>Status</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>action</key>
+			<string>refreshStatus</string>
+			<key>label</key>
+			<string>Refresh Status</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>action</key>
+			<string>respring</string>
+			<key>label</key>
+			<string>Apply Changes</string>
+		</dict>
+	</array>
+	<key>title</key>
+	<string>USB Tethering</string>
+</dict>
+</plist>
