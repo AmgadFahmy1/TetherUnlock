@@ -4,18 +4,19 @@
 
 // MobileWiFi framework loading
 static void *wifiFramework = NULL;
-typedef void *(*WiFiManagerClientCreate)(CFAllocatorRef allocator, int flags);
-typedef CFArrayRef (*WiFiManagerClientCopyDevices)(WiFiManagerClientRef manager);
-typedef void (*WiFiManagerClientSetProperty)(WiFiManagerClientRef manager, CFStringRef key, CFPropertyListRef value);
-typedef BOOL (*WiFiDeviceClientPowerOn)(WiFiDeviceClientRef device);
-typedef void (*WiFiDeviceClientSetPower)(WiFiDeviceClientRef device, BOOL power);
-typedef CFStringRef (*WiFiDeviceClientCopyInterfaceName)(WiFiDeviceClientRef device);
-typedef void (*WiFiDeviceClientScanAsync)(WiFiDeviceClientRef device, CFDictionaryRef dict, void *callback, void *info);
 
-typedef const void *WiFiManagerClientRef;
-typedef const void *WiFiDeviceClientRef;
+typedef const void *TUWiFiManagerClientRef;
+typedef const void *TUWiFiDeviceClientRef;
 
-static WiFiManagerClientRef wifiManager = NULL;
+typedef void *(*TUWiFiManagerClientCreate)(CFAllocatorRef allocator, int flags);
+typedef CFArrayRef (*TUWiFiManagerClientCopyDevices)(TUWiFiManagerClientRef manager);
+typedef void (*TUWiFiManagerClientSetProperty)(TUWiFiManagerClientRef manager, CFStringRef key, CFPropertyListRef value);
+typedef BOOL (*TUWiFiDeviceClientPowerOn)(TUWiFiDeviceClientRef device);
+typedef void (*TUWiFiDeviceClientSetPower)(TUWiFiDeviceClientRef device, BOOL power);
+typedef CFStringRef (*TUWiFiDeviceClientCopyInterfaceName)(TUWiFiDeviceClientRef device);
+typedef void (*TUWiFiDeviceClientScanAsync)(TUWiFiDeviceClientRef device, CFDictionaryRef dict, void *callback, void *info);
+
+static TUWiFiManagerClientRef wifiManager = NULL;
 
 // Initialize WiFi framework
 static BOOL initWiFiFramework() {
@@ -27,7 +28,7 @@ static BOOL initWiFiFramework() {
         return NO;
     }
     
-    WiFiManagerClientCreate createFunc = (WiFiManagerClientCreate)dlsym(wifiFramework, "WiFiManagerClientCreate");
+    TUWiFiManagerClientCreate createFunc = (TUWiFiManagerClientCreate)dlsym(wifiFramework, "WiFiManagerClientCreate");
     if (createFunc) {
         wifiManager = createFunc(kCFAllocatorDefault, 0);
     }
@@ -39,8 +40,8 @@ static BOOL initWiFiFramework() {
 static BOOL enableWiFiHotspot(NSString *ssid, NSString *password) {
     if (!initWiFiFramework()) return NO;
     
-    WiFiManagerClientSetProperty setPropFunc = 
-        (WiFiManagerClientSetProperty)dlsym(wifiFramework, "WiFiManagerClientSetProperty");
+    TUWiFiManagerClientSetProperty setPropFunc = 
+        (TUWiFiManagerClientSetProperty)dlsym(wifiFramework, "WiFiManagerClientSetProperty");
     
     if (!setPropFunc) return NO;
     
@@ -86,8 +87,8 @@ static BOOL enableWiFiHotspot(NSString *ssid, NSString *password) {
 static BOOL disableWiFiHotspot() {
     if (!initWiFiFramework()) return NO;
     
-    WiFiManagerClientSetProperty setPropFunc = 
-        (WiFiManagerClientSetProperty)dlsym(wifiFramework, "WiFiManagerClientSetProperty");
+    TUWiFiManagerClientSetProperty setPropFunc = 
+        (TUWiFiManagerClientSetProperty)dlsym(wifiFramework, "WiFiManagerClientSetProperty");
     
     if (!setPropFunc) return NO;
     
@@ -99,13 +100,13 @@ static BOOL disableWiFiHotspot() {
 static BOOL isWiFiEnabled() {
     if (!initWiFiFramework()) return NO;
     
-    WiFiManagerClientRef manager = wifiManager;
+    TUWiFiManagerClientRef manager = wifiManager;
     if (!manager) return NO;
     
     // Try to get WiFiManagerClientCopyPower method
-    typedef BOOL (*WiFiManagerClientGetPower)(WiFiManagerClientRef);
-    WiFiManagerClientGetPower getPower = 
-        (WiFiManagerClientGetPower)dlsym(wifiFramework, "WiFiManagerClientGetPower");
+    typedef BOOL (*TUWiFiManagerClientGetPower)(TUWiFiManagerClientRef);
+    TUWiFiManagerClientGetPower getPower = 
+        (TUWiFiManagerClientGetPower)dlsym(wifiFramework, "WiFiManagerClientGetPower");
     
     if (getPower) {
         return getPower(manager);
