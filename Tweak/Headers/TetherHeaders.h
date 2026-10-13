@@ -31,17 +31,17 @@
 + (void)fetchCurrentWithCompletionHandler:(void(^)(NEHotspotNetwork *currentNetwork))handler;
 @end
 
-@interface NEHotspotConfigurationManager : NSObject
-+ (instancetype)sharedManager;
-- (void)applyConfiguration:(NEHotspotConfiguration *)configuration
-                 completion:(void(^)(NSError *error))completion;
-@end
-
 @interface NEHotspotConfiguration : NSObject
 @property (nonatomic, copy) NSString *SSID;
 @property (nonatomic, copy) NSString *passphrase;
 @property (nonatomic) BOOL isWEP;
 - (instancetype)initWithSSID:(NSString *)SSID passphrase:(NSString *)passphrase isWEP:(BOOL)isWEP;
+@end
+
+@interface NEHotspotConfigurationManager : NSObject
++ (instancetype)sharedManager;
+- (void)applyConfiguration:(NEHotspotConfiguration *)configuration
+                 completion:(void(^)(NSError *error))completion;
 @end
 
 // MobileWiFi private framework
