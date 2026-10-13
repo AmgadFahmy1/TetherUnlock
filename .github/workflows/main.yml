@@ -1,0 +1,35 @@
+name: Build TetherUnlock
+on:
+  workflow_dispatch:
+jobs:
+  build-deb:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        path: repo
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential clang perl fakeroot git curl xz-utils wget
+    - name: Install Theos
+      run: git clone --recursive https://github.com/theos/theos.git /home/runner/theos
+    - name: Download iOS SDK
+      run: |
+        mkdir -p /home/runner/theos/sdks
+        cd /home/runner/theos/sdks
+        wget -q https://github.com/theos/sdks/releases/download/15.5/iPhoneOS15.5.sdk.tar.gz
+        tar -xzf iPhoneOS15.5.sdk.tar.gz
+        rm -f iPhoneOS15.5.sdk.tar.gz
+    - name: Build package
+      run: |
+        export THEOS=/home/runner/theos
+        export PATH=$THEOS/bin:$PATH
+        cd repo/TetherUnlock 2>/dev/null || cd repo
+        make package FINALPACKAGE=1 || make package
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: TetherUnlock-deb
+        path: "**/*.deb"
+        if-no-files-found: error
