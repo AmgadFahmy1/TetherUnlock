@@ -1,6 +1,9 @@
 #import <Preferences/PSListController.h>
 #import <Preferences/PSSpecifier.h>
 #import <notify.h>
+#import <spawn.h>
+#import <fcntl.h>
+#import <sys/wait.h>
 
 @interface TetherUnlockRootListController : PSListController
 @end
@@ -71,33 +74,31 @@
         return;
     }
 
-    NSTask *task = [[NSTask alloc] init];
-    task.launchPath = toolPath;
-    task.arguments = enable ? @[@"on"] : @[@"off"];
-    task.standardOutput = [NSPipe pipe];
-    task.standardError = [NSPipe pipe];
+    const char *argv_on[] = {[toolPath fileSystemRepresentation], "on", NULL};
+    const char *argv_off[] = {[toolPath fileSystemRepresentation], "off", NULL};
+    const char **argv = enable ? argv_on : argv_off;
 
-    @try {
-        [task launch];
-        [task waitUntilExit];
+    posix_spawn_file_actions_t actions;
+    posix_spawn_file_actions_init(&actions);
+    posix_spawn_file_actions_addopen(&actions, 1, "/dev/null", O_WRONLY, 0);
+    posix_spawn_file_actions_addopen(&actions, 2, "/dev/null", O_WRONLY, 0);
 
-        NSFileHandle *outHandle = [[task standardOutput] fileHandleForReading];
-        NSData *outData = [outHandle readDataToEndOfFile];
-        NSString *output = [[NSString alloc] initWithData:outData encoding:NSUTF8StringEncoding] ?: @"";
+    pid_t pid = 0;
+    int status = posix_spawn(&pid, [toolPath fileSystemRepresentation], &actions, NULL, (char *const *)argv, NULL);
+    posix_spawn_file_actions_destroy(&actions);
 
+    if (status == 0) {
+        int exitStatus = 0;
+        waitpid(pid, &exitStatus, 0);
         NSString *resultMsg = enable ? @"Native tethering ENABLED." : @"Native tethering DISABLED.";
-        if (output.length > 0) {
-            resultMsg = [resultMsg stringByAppendingFormat:@"\n\n%@", output];
-        }
-
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"TetherUnlock"
                                                                        message:resultMsg
                                                                 preferredStyle:UIAlertControllerStyleAlert];
         [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
         [self presentViewController:alert animated:YES completion:nil];
-    } @catch (NSException *exception) {
+    } else {
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"TetherUnlock"
-                                                                       message:[NSString stringWithFormat:@"Failed to run toggleTether: %@", exception.reason]
+                                                                       message:[NSString stringWithFormat:@"Failed to run toggleTether (error %d)", status]
                                                                 preferredStyle:UIAlertControllerStyleAlert];
         [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
         [self presentViewController:alert animated:YES completion:nil];
