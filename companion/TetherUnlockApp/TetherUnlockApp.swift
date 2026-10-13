@@ -192,12 +192,6 @@ class TetherManager: ObservableObject {
         
         if let carrier = networkInfo.subscriberCellularProvider {
             carrierInfo = "\(carrier.carrierName ?? "Unknown") (\(carrier.isoCountryCode ?? "?"))"
-            
-            if carrier.isDataPlanEnabled {
-                carrierInfo += " - Data enabled"
-            } else {
-                carrierInfo += " - Data disabled"
-            }
         }
     }
     
