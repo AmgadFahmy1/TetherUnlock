@@ -52,6 +52,66 @@
     notify_post("com.tetherunlock/respring");
 }
 
+- (void)runToggleTether:(BOOL)enable {
+    NSString *toolPath = nil;
+    NSArray *candidates = @[@"/var/jb/usr/bin/toggleTether", @"/usr/bin/toggleTether"];
+    for (NSString *path in candidates) {
+        if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+            toolPath = path;
+            break;
+        }
+    }
+
+    if (!toolPath) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"TetherUnlock"
+                                                                       message:@"toggleTether tool not found. Reinstall the package."
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
+
+    NSTask *task = [[NSTask alloc] init];
+    task.launchPath = toolPath;
+    task.arguments = enable ? @[@"on"] : @[@"off"];
+    task.standardOutput = [NSPipe pipe];
+    task.standardError = [NSPipe pipe];
+
+    @try {
+        [task launch];
+        [task waitUntilExit];
+
+        NSFileHandle *outHandle = [[task standardOutput] fileHandleForReading];
+        NSData *outData = [outHandle readDataToEndOfFile];
+        NSString *output = [[NSString alloc] initWithData:outData encoding:NSUTF8StringEncoding] ?: @"";
+
+        NSString *resultMsg = enable ? @"Native tethering ENABLED." : @"Native tethering DISABLED.";
+        if (output.length > 0) {
+            resultMsg = [resultMsg stringByAppendingFormat:@"\n\n%@", output];
+        }
+
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"TetherUnlock"
+                                                                       message:resultMsg
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+    } @catch (NSException *exception) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"TetherUnlock"
+                                                                       message:[NSString stringWithFormat:@"Failed to run toggleTether: %@", exception.reason]
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+    }
+}
+
+- (void)enableNativeTether {
+    [self runToggleTether:YES];
+}
+
+- (void)disableNativeTether {
+    [self runToggleTether:NO];
+}
+
 - (void)openGitHub {
     NSURL *url = [NSURL URLWithString:@"https://github.com/tetherunlock"];
     [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
