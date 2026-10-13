@@ -62,7 +62,7 @@ jobs:
           -target TetherUnlockApp \
           -configuration Release \
           -sdk iphoneos \
-          -derivedDataPath build \
+          SYMROOT=build \
           CODE_SIGNING_ALLOWED=NO \
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO \
