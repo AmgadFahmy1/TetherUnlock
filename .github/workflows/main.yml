@@ -11,21 +11,23 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential clang perl fakeroot git curl xz-utils wget
+        sudo apt-get install -y build-essential clang perl fakeroot git curl xz-utils
     - name: Install Theos
       run: git clone --recursive https://github.com/theos/theos.git /home/runner/theos
     - name: Download iOS SDK
       run: |
         mkdir -p /home/runner/theos/sdks
         cd /home/runner/theos/sdks
-        wget -q https://github.com/theos/sdks/releases/download/15.5/iPhoneOS15.5.sdk.tar.gz
-        tar -xzf iPhoneOS15.5.sdk.tar.gz
-        rm -f iPhoneOS15.5.sdk.tar.gz
+        wget -q https://github.com/theos/sdks/archive/refs/heads/master.tar.gz
+        tar -xzf master.tar.gz
+        mv sdks-master/* .
+        rm -rf sdks-master master.tar.gz
+        ls -la
     - name: Build package
       run: |
         export THEOS=/home/runner/theos
         export PATH=$THEOS/bin:$PATH
-        cd repo/TetherUnlock 2>/dev/null || cd repo
+        cd repo
         make package FINALPACKAGE=1 || make package
     - name: Upload artifact
       uses: actions/upload-artifact@v4
