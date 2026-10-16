@@ -9,8 +9,8 @@
 			<string>PSGroupCell</string>
 			<key>label</key>
 			<string>TetherUnlock</string>
-			<key>footerText</key>
-			<string>Complete tethering unlock for iPadOS 15</string>
+				<key>footerText</key>
+				<string>Tethering unlock via Apple's native stack. Works on iPhone (iOS 14.x, unc0ver, rootful) and iPad (iOS 15.x, Xina15, rootless).</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -209,8 +209,8 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
-			<key>footerText</key>
-			<string>TetherUnlock 1.0.0 - For iPadOS 15.0-15.4.1 with Xina15</string>
+				<key>footerText</key>
+				<string>TetherUnlock 1.1.0 - iPhone iOS 14.x (unc0ver) + iPad iOS 15.x (Xina15)</string>
 		</dict>
 	</array>
 	<key>title</key>
