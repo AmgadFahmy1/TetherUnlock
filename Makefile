@@ -1,5 +1,11 @@
-THEOS_PACKAGE_SCHEME=rootless
-TARGET := iphone:clang:15.6:15.0
+# Rootful (iPhone, unc0ver) by default; rootless (iPad, Xina15): make package ROOTLESS=1
+ifeq ($(ROOTLESS),1)
+THEOS_PACKAGE_SCHEME = rootless
+else
+THEOS_PACKAGE_ARCH = iphoneos-arm
+endif
+
+TARGET := iphone:clang:15.6:14.0
 ARCHS = arm64 arm64e
 
 INSTALL_TARGET_PROCESSES = SpringBoard
