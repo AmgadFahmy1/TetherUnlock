@@ -1,94 +1,84 @@
 #import "Headers/TetherHeaders.h"
-#import "Headers/CarrierHeaders.h"
-#import <dlfcn.h>
-#import <objc/runtime.h>
+#import <notify.h>
 
-// Global state
+extern BOOL tu_enableNativeTether(void);
+extern BOOL tu_disableNativeTether(void);
+extern BOOL tu_isNativeTetherActive(void);
+
 static BOOL tetherEnabled = NO;
-static BOOL wifiTetherEnabled = NO;
-static BOOL usbTetherEnabled = NO;
-static BOOL btTetherEnabled = NO;
-static NSString *customSSID = nil;
-static NSString *customPassword = nil;
-static NSString *customAPN = nil;
 
-// Load preferences
-static void loadPreferences() {
-    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.tetherunlock.prefs"];
-    
-    tetherEnabled = [defaults boolForKey:kTetherEnabled] ?: NO;
-    wifiTetherEnabled = [defaults boolForKey:kWiFiTetherEnabled] ?: YES;
-    usbTetherEnabled = [defaults boolForKey:kUSBtTetherEnabled] ?: YES;
-    btTetherEnabled = [defaults boolForKey:kBTTetherEnabled] ?: YES;
-    
-    customSSID = [defaults stringForKey:kWiFiSSID];
-    customPassword = [defaults stringForKey:kWiFiPassword];
-    customAPN = [defaults stringForKey:kCustomAPN];
-    
-    if (!customSSID) {
-        // Generate default SSID based on device name
-        NSString *deviceName = [[UIDevice currentDevice] name];
-        customSSID = [NSString stringWithFormat:@"%@ Tether", deviceName];
+static void tlog(NSString *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    NSString *msg = [[[NSString alloc] initWithFormat:fmt arguments:ap] autorelease];
+    va_end(ap);
+    NSLog(@"[TetherUnlock] %@", msg);
+    NSString *line = [NSString stringWithFormat:@"%@ %@\n", [NSDate date], msg];
+    NSFileHandle *fh = [NSFileHandle fileHandleForWritingAtPath:@"/var/tmp/tetherunlock.log"];
+    if (!fh) {
+        [[NSFileManager defaultManager] createFileAtPath:@"/var/tmp/tetherunlock.log" contents:nil attributes:nil];
+        fh = [NSFileHandle fileHandleForWritingAtPath:@"/var/tmp/tetherunlock.log"];
     }
-    
-    if (!customPassword) {
-        customPassword = @"tetherunlock123"; // Default password
+    if (fh) {
+        [fh seekToEndOfFile];
+        [fh writeData:[line dataUsingEncoding:NSUTF8StringEncoding]];
+        [fh closeFile];
     }
-    
-    [defaults release];
 }
 
-// Notify on state change
-static void notifyStateChanged(BOOL enabled) {
-    CFNotificationCenterPostNotification(
-        CFNotificationCenterGetDarwinNotifyCenter(),
-        CFSTR("com.tetherunlock/statechanged"),
-        NULL,
-        NULL,
-        YES
-    );
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:TetherUnlockStateChanged
-                                                        object:nil
-                                                      userInfo:@{@"enabled": @(enabled)}];
+static BOOL readBoolPref(CFStringRef key) {
+    CFPropertyListRef v = CFPreferencesCopyAppValue(key, CFSTR("com.tetherunlock.prefs"));
+    BOOL b = NO;
+    if (v) {
+        b = [(id)v boolValue];
+        CFRelease(v);
+    }
+    return b;
 }
 
-// Apply carrier unlock
-static void applyCarrierUnlock() {
-    CTTelephonyNetworkInfo *networkInfo = [[CTTelephonyNetworkInfo alloc] init];
-    CTCarrier *carrier = [networkInfo subscriberCellularProvider];
-    
-    if (!carrier) return;
-    
-    // Try to enable data plan if disabled
-    if (![carrier isDataPlanEnabled]) {
-        // Use private method if available
-        if ([carrier respondsToSelector:@selector(setDataPlanEnabled:)]) {
-            [carrier performSelector:@selector(setDataPlanEnabled:) withObject:@YES];
-        }
+static void loadPreferences(void) {
+    tetherEnabled = readBoolPref(CFSTR("tether_enabled"));
+}
+
+static void applyState(void) {
+    if (tetherEnabled) {
+        BOOL ok = tu_enableNativeTether();
+        tlog(@"applyState: enable native tether -> %@", ok ? @"OK" : @"FAILED");
+    } else {
+        tu_disableNativeTether();
+        tlog(@"applyState: disable native tether");
     }
-    
-    [networkInfo release];
+}
+
+static void handleCommand(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+    tlog(@"Command received: %@", (id)name);
+    loadPreferences();
+    applyState();
 }
 
 %ctor {
     @autoreleasepool {
+        NSString *bid = [NSBundle mainBundle].bundleIdentifier;
+        if (![bid isEqualToString:@"com.apple.springboard"]) {
+            return;
+        }
+        CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+                                        NULL,
+                                        handleCommand,
+                                        CFSTR("com.tetherunlock.command"),
+                                        NULL,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
+        CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+                                        NULL,
+                                        handleCommand,
+                                        CFSTR("com.tetherunlock/respring"),
+                                        NULL,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
         loadPreferences();
-        
-        // Register for Darwin notifications
-        int token;
-        notify_register_dispatch("com.tetherunlock/respring", &token, dispatch_get_main_queue(), ^(int t) {
-            loadPreferences();
-            if (tetherEnabled) {
-                applyCarrierUnlock();
-            }
-            notifyStateChanged(tetherEnabled);
-        });
-        
-        // Initial carrier unlock if enabled
+        tlog(@"Tweak loaded (enabled=%d)", tetherEnabled);
         if (tetherEnabled) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                applyCarrierUnlock();
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                applyState();
             });
         }
     }
