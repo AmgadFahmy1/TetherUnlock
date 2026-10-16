@@ -3,6 +3,14 @@ on:
   workflow_dispatch:
 jobs:
   build-deb:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - scheme: rootful
+            rootless: "0"
+          - scheme: rootless
+            rootless: "1"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -33,73 +41,28 @@ jobs:
         rm -rf sdks-master master.tar.gz
         ls -la
 
-    - name: Build package
+    - name: Build package (${{ matrix.scheme }})
       run: |
         export THEOS=/home/runner/theos
         export PATH=$THEOS/bin:$PATH
         cd repo
         ls -la
-        make package FINALPACKAGE=1 || make package
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: TetherUnlock-deb
-        path: "**/*.deb"
-        if-no-files-found: error
-
-  build-deb-arm64:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        path: repo
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential perl fakeroot git curl xz-utils libssl-dev libxml2-dev libtinfo6
-
-    - name: Install Theos
-      run: git clone --recursive https://github.com/theos/theos.git /home/runner/theos
-
-    - name: Install Linux toolchain
-      run: |
-        mkdir -p /home/runner/theos/toolchain
-        curl -sL https://github.com/L1ghtmann/llvm-project/releases/latest/download/iOSToolchain-x86_64.tar.xz | tar -xJvf - -C /home/runner/theos/toolchain/
-        ls -la /home/runner/theos/toolchain/linux/iphone/bin/
-
-    - name: Download iOS SDK
-      run: |
-        mkdir -p /home/runner/theos/sdks
-        cd /home/runner/theos/sdks
-        wget -q https://github.com/theos/sdks/archive/refs/heads/master.tar.gz
-        tar -xzf master.tar.gz
-        mv sdks-master/* .
-        rm -rf sdks-master master.tar.gz
-        ls -la
-
-    - name: Build package (arm64 only)
-      run: |
-        export THEOS=/home/runner/theos
-        export PATH=$THEOS/bin:$PATH
-        cd repo
-        ls -la
-        make package FINALPACKAGE=1 ARCHS=arm64
+        make package FINALPACKAGE=1 ROOTLESS=${{ matrix.rootless }}
 
     - name: Rename artifact
       run: |
         cd repo
         for f in packages/*.deb; do
-          mv "$f" "${f%.deb}-arm64.deb"
+          base=$(basename "$f" .deb)
+          mv "$f" "packages/${base}-${{ matrix.scheme }}.deb"
         done
         ls -la packages/
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: TetherUnlock-deb-arm64
-        path: "**/*.deb"
+        name: TetherUnlock-${{ matrix.scheme }}
+        path: "repo/packages/*.deb"
         if-no-files-found: error
 
   build-ipa:
@@ -150,8 +113,9 @@ jobs:
         name: TetherUnlock-tipa
         path: repo/companion/TetherUnlock.tipa
         if-no-files-found: error
+
   release:
-    needs: [build-deb, build-deb-arm64, build-ipa]
+    needs: [build-deb, build-ipa]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -164,28 +128,30 @@ jobs:
     - name: Collect files
       run: |
         mkdir -p release
-        find artifacts -name "*.deb" -exec cp {} release/ \;
+        find artifacts -name "*-rootful.deb" -exec cp {} release/ \;
+        find artifacts -name "*-rootless.deb" -exec cp {} release/ \;
         find artifacts -name "*.ipa" -exec cp {} release/ \;
         find artifacts -name "*.tipa" -exec cp {} release/ \;
-        mv release/com.tetherunlock.tweak_1.0.0_iphoneos-arm64-arm64.deb release/TetherUnlock-arm64.deb || true
-        mv release/com.tetherunlock.tweak_1.0.0_iphoneos-arm64.deb release/TetherUnlock-arm64e.deb || true
         ls -la release/
 
     - name: Publish release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v1.0.0
-        name: TetherUnlock v1.0.0
+        tag_name: v1.1.0
+        name: TetherUnlock v1.1.0
         body: |
-          TetherUnlock v1.0.0 — tethering unlock for iPadOS 15.0–15.4.1 (Xina15 rootless).
+          TetherUnlock v1.1.0 — dual jailbreak support.
 
           **Packages**
-          - `TetherUnlock-arm64.deb` — arm64-only (safest, recommended to try first)
-          - `TetherUnlock-arm64e.deb` — arm64 + arm64e
-          - `TetherUnlock.tipa` — companion app for TrollStore/Sideloadly
+          - `*-rootful.deb` — iPhone, iOS 14.x, unc0ver (install this on your iPhone)
+          - `*-rootless.deb` — iPad, iOS 15.x, Xina15 (install this on your iPad)
+          - `TetherUnlock.tipa` — companion app for TrollStore (both devices)
           - `TetherUnlock.ipa` — same app
 
-          **Native mode:** Settings → TetherUnlock → "Enable Native Tethering" (TetherMe-style Netrb/MIS toggle).
+          **What changed**
+          - App now posts Darwin commands to the tweak; toggles actually reach the native tethering stack (Netrb + Mobile Internet Sharing) instead of doing nothing.
+          - Settings → TetherUnlock → "Enable Native Tethering" runs the entitled toggleTether tool (TetherMe-style).
+          - Logs to /var/tmp/tetherunlock.log for SSH debugging.
         files: |
           release/*
         make_latest: true
