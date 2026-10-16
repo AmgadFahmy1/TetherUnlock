@@ -1,5 +1,8 @@
-THEOS_PACKAGE_SCHEME=rootless
-TARGET := iphone:clang:15.6:15.0
+ifeq ($(ROOTLESS),1)
+THEOS_PACKAGE_SCHEME = rootless
+endif
+
+TARGET := iphone:clang:15.6:14.0
 ARCHS = arm64 arm64e
 
 include $(THEOS)/makefiles/common.mk
@@ -19,5 +22,5 @@ TetherUnlockPrefs_CFLAGS = -Wno-deprecated-declarations -Wno-error
 include $(THEOS_MAKE_PATH)/bundle.mk
 
 internal-stage::
-	$(ECHO_NOTHING)mkdir -p $(THEOS_STAGING_DIR)/Library/PreferenceLoader/Preferences$(ECHO_END)
-	$(ECHO_NOTHING)cp entry.plist $(THEOS_STAGING_DIR)/Library/PreferenceLoader/Preferences/TetherUnlockPrefs.plist$(ECHO_END)
+	$(ECHO_NOTHING)mkdir -p $(THEOS_STAGING_DIR)$(THEOS_PACKAGE_INSTALL_PREFIX)/Library/PreferenceLoader/Preferences$(ECHO_END)
+	$(ECHO_NOTHING)cp entry.plist $(THEOS_STAGING_DIR)$(THEOS_PACKAGE_INSTALL_PREFIX)/Library/PreferenceLoader/Preferences/TetherUnlockPrefs.plist$(ECHO_END)
